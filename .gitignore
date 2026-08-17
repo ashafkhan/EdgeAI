@@ -1,20 +1,51 @@
+# Python virtual environment
 .venv/
+venv/
+env/
+
+# Python cache / compiled files
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
 
 # Large model files
 models/*.pt
 models/*.onnx
+models/*.pth
+models/*.weights
 
 # Large video files
 videos/*.mp4
 videos/*.avi
 videos/*.mov
+videos/*.mkv
+videos/*.webm
 
 # Generated output
 output/annotated/*
 output/logs/*
+output/*.mp4
+output/*.avi
+output/*.mov
 
 # OS/editor files
 .DS_Store
 .vscode/
+.idea/
+
+# Python tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Temporary files
+*.tmp
+*.log
