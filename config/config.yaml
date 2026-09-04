@@ -1,0 +1,73 @@
+# ============================================================
+# Edge AI for Smart City Surveillance - Configuration
+# ============================================================
+
+model:
+  path: "models/yolov8n.pt"
+  confidence: 0.25
+  iou_threshold: 0.45
+  tracker: "bytetrack.yaml"
+  device: "cpu"  # "cpu", "mps", "cuda"
+
+classes:
+  0: "person"
+  1: "bicycle"
+  2: "car"
+  3: "motorcycle"
+  5: "bus"
+  7: "truck"
+
+video:
+  input_path: "videos/sample1.mp4"
+  output_dir: "output/annotated"
+  show_display: false   # Set to true for live GUI cv2.imshow (requires display)
+  max_frames: null      # null to process entire video, or an integer limit for quick testing
+
+# ------------------------------------------------------------
+# Crowd Monitoring Zone
+# ------------------------------------------------------------
+# Only 'person' objects inside this polygon are counted towards crowd threshold.
+crowd_zone:
+  name: "Crosswalk Pedestrian Zone"
+  threshold: 6
+  target_classes:
+    - "person"
+  polygon:
+    - [200, 950]
+    - [2120, 950]
+    - [2120, 1530]
+    - [200, 1530]
+  color: [0, 220, 0]      # BGR Green
+  alpha: 0.22             # Fill opacity
+
+# ------------------------------------------------------------
+# Restricted Zone
+# ------------------------------------------------------------
+# Alerts when unauthorized objects enter this zone (e.g. pedestrians in roadway).
+restricted_zone:
+  name: "Active Roadway Hazard Zone"
+  alert_classes:
+    - "person"
+    - "bicycle"
+  polygon:
+    - [150, 1550]
+    - [2050, 1550]
+    - [1900, 2650]
+    - [150, 2650]
+  color: [0, 0, 220]      # BGR Red
+  alpha: 0.20             # Fill opacity
+
+# ------------------------------------------------------------
+# Virtual Counting Line
+# ------------------------------------------------------------
+# Tracks bidirectional crossings without duplicate counts.
+counting_line:
+  name: "Crosswalk Midline"
+  start: [1100, 950]
+  end: [1100, 1530]
+  label_positive: "Eastbound (In)"
+  label_negative: "Westbound (Out)"
+  target_classes:
+    - "person"
+  color: [0, 255, 255]    # BGR Yellow
+  thickness: 4
