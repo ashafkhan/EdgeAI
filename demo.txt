@@ -1,0 +1,21 @@
+# 1. Activate virtual environment
+source .venv/bin/activate
+
+# 2. Live Edge ONNX GUI Surveillance Window (For Demonstration)
+python src/edge_infer.py
+
+# 3. Run Live Webcam Surveillance (Optional Demo)
+python src/edge_infer.py --source 0
+
+# 4. Run Batch Surveillance Engine (Phase 4 & 5)
+python src/zones.py
+
+# 5. Query the Event Database (Phase 5)
+python src/logger.py --summarqy
+python src/logger.py --recent 15
+
+# 6. Run Edge Model Benchmark (Phase 6)
+python src/benchmark.py --runs 50
+
+# 7. Launch Visual Zone Calibration Tool
+python src/calibrate_zones.py

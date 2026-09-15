@@ -1,6 +1,4 @@
-# ============================================================
 # Edge AI for Smart City Surveillance - Configuration
-# ============================================================
 
 model:
   path: "models/yolov8n.pt"
@@ -23,9 +21,7 @@ video:
   show_display: false   # Set to true for live GUI cv2.imshow (requires display)
   max_frames: null      # null to process entire video, or an integer limit for quick testing
 
-# ------------------------------------------------------------
 # Crowd Monitoring Zone
-# ------------------------------------------------------------
 # Only 'person' objects inside this polygon are counted towards crowd threshold.
 crowd_zone:
   name: "Crosswalk Pedestrian Zone"
@@ -40,9 +36,7 @@ crowd_zone:
   color: [0, 220, 0]      # BGR Green
   alpha: 0.22             # Fill opacity
 
-# ------------------------------------------------------------
 # Restricted Zone
-# ------------------------------------------------------------
 # Alerts when unauthorized objects enter this zone (e.g. pedestrians in roadway).
 restricted_zone:
   name: "Active Roadway Hazard Zone"
@@ -57,9 +51,7 @@ restricted_zone:
   color: [0, 0, 220]      # BGR Red
   alpha: 0.20             # Fill opacity
 
-# ------------------------------------------------------------
 # Virtual Counting Line
-# ------------------------------------------------------------
 # Tracks bidirectional crossings without duplicate counts.
 counting_line:
   name: "Crosswalk Midline"

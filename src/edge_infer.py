@@ -35,6 +35,7 @@ def run_edge_inference(
     save_video: bool = True,
     conf_thresh: float = None,
     max_frames: int = None,
+    loop: bool = True,
 ):
     # ------------------------------------------------------------
     # Configuration
@@ -108,6 +109,7 @@ def run_edge_inference(
     print(f"Save Annotated : {output_path if save_video else 'DISABLED'}")
     print(f"Crowd Limit    : {crowd_threshold} persons in {crowd_cfg['name']}")
     print(f"Restricted Area: {restr_cfg['name']} (Intrusion Alerts: {restr_alert_classes})")
+    print(f"Playback Mode  : {'CONTINUOUS LOOP (Runs until Q or window closed)' if loop and not is_webcam else 'SINGLE PASS'}")
     print("=" * 70 + "\n")
 
     # Load ONNX model via Ultralytics ONNX Runtime backend
@@ -141,11 +143,24 @@ def run_edge_inference(
     prev_time = time.time()
     overcrowd_frames = 0
     intrusion_frames = 0
+    loop_count = 1
 
     while True:
         ret, frame = cap.read()
         if not ret:
-            break
+            if loop and not is_webcam:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                loop_count += 1
+                print(f"\n🔁 [Loop {loop_count}] Video completed. Seamlessly looping playback for continuous demonstration...\n")
+                # Finalize video writer after first loop so file is valid and bounded in size
+                if writer:
+                    writer.release()
+                    writer = None
+            else:
+                break
 
         frame_idx += 1
         if max_frames and frame_idx > max_frames:
@@ -379,13 +394,35 @@ def run_edge_inference(
             writer.write(frame)
 
         if display:
+            # Detect if user clicked the window's close button ('X')
+            try:
+                if cv2.getWindowProperty("Edge AI - Live Smart City Surveillance", cv2.WND_PROP_VISIBLE) < 1:
+                    print("\nUser closed the surveillance window.")
+                    break
+            except Exception:
+                pass
+
             # Scale frame for smooth GUI viewing on MacBook screen
             disp_view = cv2.resize(frame, (disp_w, disp_h))
+
+            # If looping, display continuous demo status bar at bottom of window
+            if loop and not is_webcam:
+                cv2.putText(
+                    disp_view,
+                    f"CONTINUOUS LIVE DEMO | Loop {loop_count} | Press 'q' or close window to exit",
+                    (15, disp_h - 15),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.55 * (disp_w / 540.0),
+                    (0, 255, 255),
+                    1,
+                    cv2.LINE_AA,
+                )
+
             cv2.imshow("Edge AI - Live Smart City Surveillance", disp_view)
             # 1ms delay for snappy live rendering
             key = cv2.waitKey(1) & 0xFF
             if key == ord("q") or key == 27:
-                print("\nUser requested exit (pressed 'q').")
+                print("\nUser requested exit (pressed 'q' or 'ESC').")
                 break
 
         if frame_idx % 30 == 0:
@@ -414,7 +451,7 @@ def run_edge_inference(
     print("\n" + "=" * 70)
     print("EDGE INFERENCE COMPLETE")
     print("=" * 70)
-    print(f"Frames Processed : {frame_idx}")
+    print(f"Frames Processed : {frame_idx} across {loop_count} loop(s)")
     print(f"Crossings        : In {line_tracker.in_count} | Out {line_tracker.out_count}")
     print(f"Overcrowd Frames : {overcrowd_frames}")
     print(f"Intrusion Frames : {intrusion_frames}")
@@ -429,6 +466,7 @@ if __name__ == "__main__":
     parser.add_argument("--source", type=str, default=None, help="Video source (file path or '0' for webcam)")
     parser.add_argument("--no-display", action="store_true", help="Run in headless mode without GUI window")
     parser.add_argument("--no-save", action="store_true", help="Do not save output video file")
+    parser.add_argument("--no-loop", action="store_true", help="Disable continuous looping of video source")
     parser.add_argument("--conf", type=float, default=0.25, help="Detection confidence threshold")
     parser.add_argument("--max-frames", type=int, default=None, help="Limit number of frames to process")
     args = parser.parse_args()
@@ -440,4 +478,5 @@ if __name__ == "__main__":
         save_video=not args.no_save,
         conf_thresh=args.conf,
         max_frames=args.max_frames,
+        loop=not args.no_loop,
     )
